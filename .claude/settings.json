@@ -1,0 +1,31 @@
+{
+  "permissions": {
+    "allow": ["Read", "Edit", "Bash(git *)"],
+    "ask": ["Write", "Bash(npm *)", "Bash(python *)"],
+    "deny": ["Bash(rm -rf *)", "Bash(sudo *)"]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash|Write|WebSearch|WebFetch",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 -c \"import sys; print('GOVERNANCE_CHECK: Read ../SKILL.md and follow phinq-governance procedure before this action.'); sys.exit(0)\""
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo 'GOVERNANCE_LOG: Action completed. Verify audit log entry exists.'"
+          }
+        ]
+      }
+    ]
+  }
+}
