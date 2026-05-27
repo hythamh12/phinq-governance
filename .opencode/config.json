@@ -1,0 +1,5 @@
+{
+  "agent": "build",
+  "model": "openrouter/anthropic/claude-sonnet-4",
+  "instructions": "This repo implements the phinq-governance skill. Before any file modification, external API call, or communication: read SKILL.md and follow the 5-step governance procedure. When in doubt, classify actions one level higher than your best guess. Pause and confirm with the operator for IRREVERSIBLE_MEDIUM and IRREVERSIBLE_HIGH actions."
+}
