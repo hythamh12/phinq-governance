@@ -20,7 +20,17 @@ This solves a specific problem: your AI automation runs unattended and you canno
 
 ## What it produces
 
-An append-only JSONL audit log at `~/.hermes/phinq-audit/audit.jsonl` containing every governed action, its classification, the rule check, any operator confirmation, and the execution outcome.
+A **tamper-evident**, append-only JSONL audit log at `~/.hermes/phinq-audit/audit.jsonl` containing every governed action, its classification, the rule check, any operator confirmation, and the execution outcome. Entries are hash-chained (`entry_hash = sha256(prev_hash + jcs(entry))`, RFC 8785 canonical JSON), so any modification, reordering, or deletion of history is detectable:
+
+```bash
+python3 scripts/audit_verify.py            # OK — 214 entries, chain intact
+```
+
+Operators can retrospectively grade interventions — true positive or false alarm, with estimated damage prevented — which turns the log into calibration and actuarial data:
+
+```bash
+python3 scripts/phinq_assess.py <action_id> --judgment true_positive --damage-gbp 500 --category data_loss
+```
 
 ## Install
 
@@ -55,13 +65,13 @@ The skill cross-references your existing rules document. If you have a `SOUL.md`
 
 ## What it does not do
 
-- It does not intercept calls at the runtime level. The agent must consult the skill before acting, which means the skill works on agents that respect their skills system.
+- It does not intercept calls at the runtime level. The agent must consult the skill before acting, which means the skill works on agents that respect their skills system. For hard enforcement — a proxy that sits between the agent and its LLM provider, inspects every tool call before the agent sees it, and holds high-risk actions for operator approval via Telegram — see **Phinq Proxy** at [phinq.co](https://www.phinq.co) (same classification model, same audit format; logs from both verify with the same tools).
 - It does not prevent a sufficiently capable adversarial agent from bypassing it. It is a governance protocol, not a sandbox.
 - It does not store credentials or secrets itself. It refuses to log them.
 
 ## Hosted
 
-For multi-agent dashboards, cross-session audit aggregation, anomaly detection, and team-shareable governance reports across multiple Hermes instances, see [phinq.io](https://phinq.io).
+For multi-agent dashboards, cross-session audit aggregation, anomaly detection, and team-shareable governance reports across multiple Hermes instances, see [phinq.co](https://www.phinq.co).
 
 ## License
 

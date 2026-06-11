@@ -27,7 +27,7 @@ Activate this skill before any action that:
 - Modifies billing, subscription, or payment-related state
 - Disables, removes, or modifies safeguards (including this skill itself)
 - Executes shell commands with `rm`, `sudo`, `chmod`, `curl POST`, or pipe-to-shell patterns
-- Performs bulk operations (more than 5 similar actions in sequence)
+- Performs bulk operations (more than 5 similar actions in a session or within a 30-minute window)
 - Acts on behalf of the operator in any way that produces externally visible state
 
 You also activate this skill when the operator asks for an audit, a review of recent actions, or asks whether you have been operating within constraints.
@@ -77,7 +77,9 @@ If you have a Telegram or messaging gateway configured, send the confirmation pr
 
 ### Step 4: Log the action
 
-Before executing any action that activated this skill, call `scripts/audit_log.py` with the structured action record. See `references/audit-format.md` for the schema.
+Before executing any action that activated this skill, call `scripts/audit_log.py` with the structured action record (it appends the entry and computes the hash chain — see below). See `references/audit-format.md` for the schema.
+
+The log is hash-chained: every entry carries `prev_hash` and `entry_hash = sha256(prev_hash + jcs(entry))` (RFC 8785 canonical JSON). The operator — or anyone they share the log with — can run `scripts/audit_verify.py` and detect any modification, reordering, or deletion of historical entries. Never compute these fields yourself; always append through the script.
 
 The audit log is the operator's record of what you did and why. It must be written even if the action ultimately fails or is cancelled. The log is append-only — never modify or delete entries.
 
@@ -93,7 +95,7 @@ If the action failed in a way that left the system in an inconsistent state (par
 
 Certain action patterns always require operator confirmation regardless of how the rules document treats them. These are encoded in `references/triggers.md`. The agent must read this file and treat any matching action as IRREVERSIBLE_HIGH:
 
-- BULK_DELETE — any operation deleting more than 5 items in sequence
+- BULK_DELETE — deleting more than 5 items in a session or within a 30-minute window
 - CREDENTIAL_ACCESS — any read or write to credential storage, .env files, or secret managers
 - DISABLE_SAFEGUARDS — any modification to this skill, the audit log, or other governance mechanisms
 - EXTERNAL_COMM_VOLUME — sending more than 3 outbound communications in a session
@@ -126,7 +128,7 @@ When the operator denies a confirmation request or when a governed action fails 
 
 These assessments are optional. The skill works without them. But they are what allow the operator to see, over time, whether the governance is calibrated correctly — too strict, too loose, or right. Encourage the assessment but never block on it.
 
-When recording, update the `counterfactual` block (for denied confirmations) or the `incident` block (for actions that completed and caused harm) on the relevant audit entry. These are the only retrospective modifications permitted to the audit log.
+When recording, append a new `assessment` entry referencing the original `action_id` via `scripts/phinq_assess.py` — a counterfactual assessment for denied confirmations, or an incident assessment for actions that completed and caused harm. Historical entries are never modified (the hash chain forbids it); assessments join the same chain and are linked by id.
 
 ## When governance fails
 

@@ -12,6 +12,27 @@ The path can be overridden by the `PHINQ_AUDIT_PATH` environment variable. If th
 
 One JSON object per line (JSONL). Each entry is a single action record. Never split an action across multiple lines.
 
+## Hash chain (tamper evidence)
+
+Every entry carries two additional fields, computed at append time by `scripts/audit_log.py`:
+
+```
+prev_hash   entry_hash of the previous line (64 zeros for the first line)
+entry_hash  sha256(prev_hash + jcs(entry))   # hex; entry excludes both hash fields
+```
+
+`jcs` is RFC 8785 (JCS) canonical JSON: object keys sorted by UTF-16 code units, no whitespace, UTF-8 bytes. Use integers and strings for field values — they canonicalize identically in every JCS implementation, so a log written by one Phinq tool verifies under any other.
+
+The first line of every log file is a genesis entry that anchors the chain:
+
+```json
+{"type": "genesis", "log_id": "<uuid>", "created_at": "<ISO 8601>"}
+```
+
+Verification (`scripts/audit_verify.py`, or `npm run audit:verify` in the proxy) walks the chain and reports the first break: any modification, reordering, or deletion of a historical entry is detected at its exact index. Known limitation: truncating the tail of the file is not detectable from the file alone; anchoring the chain head externally is a future addition.
+
+Always append through `scripts/audit_log.py`. Never compute hash fields by hand and never write lines directly.
+
 ## Schema
 
 ```json
@@ -65,7 +86,7 @@ One JSON object per line (JSONL). Each entry is a single action record. Never sp
 
 ## Note on counterfactual and incident assessment
 
-The `counterfactual` and `incident` blocks are populated retrospectively by the operator, not at the moment of action. Most actions will have these fields null at write time. The skill should expose a simple command — `phinq assess <action_id>` — that lets the operator add this data later, either through a Telegram reply or a one-line interaction.
+The `counterfactual` and `incident` blocks are populated retrospectively by the operator, not at the moment of action. Most actions will have these fields null at write time — and because the log is hash-chained, they are **never filled in by editing the original entry**. Instead, `scripts/phinq_assess.py <action_id> --judgment ...` appends a separate `assessment` entry that references the original `action_id`; reporting tools join the two by id. The original blocks remain in the schema as the documented shape of what an assessment captures.
 
 These fields are what transform raw governance logs into actuarial data. Without operator assessment of what actually happened (or would have happened), the dataset measures activity but cannot measure risk. With assessment, the dataset measures both, and the relationship between governance interventions and prevented damage becomes quantifiable.
 
@@ -110,6 +131,6 @@ The audit log is append-only. Never:
 - Reorder entries
 - Rewrite the file
 
-If the file becomes corrupted, write a new entry of type `INTEGRITY_NOTE` describing what was observed, then continue appending to the same file. Notify the operator.
+These rules are now mechanically enforced: the hash chain makes any in-place modification, reordering, or deletion detectable by `scripts/audit_verify.py`. If the file becomes corrupted, write a new entry of type `INTEGRITY_NOTE` describing what was observed, then continue appending to the same file. Notify the operator.
 
 If you must rotate the log for size reasons, copy the existing log to `audit-{ISO date}.jsonl` and begin a fresh file with a SESSION_BOUNDARY entry that references the archive.
