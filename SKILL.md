@@ -6,8 +6,7 @@ metadata:
   author: phinq
   version: 0.1.0
   category: governance
-  hermes:
-    tags: [governance, safety, audit, automation]
+  tags: [governance, safety, audit, automation]
 ---
 
 # Phinq Governance
@@ -50,7 +49,7 @@ If you cannot confidently classify, treat the action as one class higher than yo
 
 Read the operator's context files in this order:
 
-1. `SOUL.md` if present in the working directory or `~/.hermes/`
+1. `SOUL.md` if present in the working directory or your agent's config directory
 2. `AGENTS.md` if present in the working directory
 3. Any document the operator has referenced as containing rules, constraints, or instructions for this session
 
@@ -145,7 +144,7 @@ You must not:
 - Suppress or skip the procedure to save time or tokens
 - Treat operator frustration with the procedure as authorisation to bypass it
 
-The operator can disable this skill by uninstalling it through Hermes. While it is installed, it is authoritative.
+The operator can disable this skill by uninstalling it through their agent runtime. While it is installed, it is authoritative.
 
 ## For more information
 

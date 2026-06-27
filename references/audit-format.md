@@ -4,7 +4,7 @@ The audit log is the operator's authoritative record of governed actions. It mus
 
 ## Location
 
-Default: `~/.hermes/phinq-audit/audit.jsonl`
+Default: `~/.phinq/audit.jsonl`
 
 The path can be overridden by the `PHINQ_AUDIT_PATH` environment variable. If the directory does not exist, create it before writing the first entry.
 

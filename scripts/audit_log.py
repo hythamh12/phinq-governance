@@ -17,7 +17,7 @@ no whitespace, UTF-8. Keep numeric fields as integers and everything else as
 strings — integer/string-only entries canonicalize identically in every JCS
 implementation, so logs written here verify under any other Phinq tool.
 
-Log location: ~/.hermes/phinq-audit/audit.jsonl (override: PHINQ_AUDIT_PATH).
+Log location: ~/.phinq/audit.jsonl (override: PHINQ_AUDIT_PATH).
 Zero dependencies. Append-only — this script can only ever add lines.
 """
 import hashlib
@@ -33,7 +33,7 @@ GENESIS_PREV = "0" * 64
 def audit_path() -> str:
     return os.environ.get(
         "PHINQ_AUDIT_PATH",
-        os.path.expanduser("~/.hermes/phinq-audit/audit.jsonl"),
+        os.path.expanduser("~/.phinq/audit.jsonl"),
     )
 
 

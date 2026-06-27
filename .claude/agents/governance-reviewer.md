@@ -16,7 +16,7 @@ Before ANY action that:
 - Performs bulk operations (>5 items)
 
 You MUST:
-1. Read `SKILL.md` in the repo root or `~/.hermes/skills/phinq-governance/SKILL.md`
+1. Read `SKILL.md` in the repo root or `~/.claude/skills/phinq-governance/SKILL.md`
 2. Classify the action using `references/action-classes.md`
 3. Check against operator rules (SOUL.md, AGENTS.md)
 4. For IRREVERSIBLE_MEDIUM/HIGH actions: PAUSE and request operator confirmation

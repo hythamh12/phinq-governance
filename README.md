@@ -1,6 +1,6 @@
 # phinq-governance
 
-A self-governance skill for autonomous agents. Designed for [Hermes](https://github.com/NousResearch/hermes-agent) and any [agentskills.io](https://agentskills.io)-compatible runtime.
+A self-governance skill for autonomous AI agents. Drops into Claude Code, Codex, OpenCode, and any [agentskills.io](https://agentskills.io)-compatible runtime — no framework lock-in.
 
 ## What it does
 
@@ -20,7 +20,7 @@ This solves a specific problem: your AI automation runs unattended and you canno
 
 ## What it produces
 
-A **tamper-evident**, append-only JSONL audit log at `~/.hermes/phinq-audit/audit.jsonl` containing every governed action, its classification, the rule check, any operator confirmation, and the execution outcome. Entries are hash-chained (`entry_hash = sha256(prev_hash + jcs(entry))`, RFC 8785 canonical JSON), so any modification, reordering, or deletion of history is detectable:
+A **tamper-evident**, append-only JSONL audit log at `~/.phinq/audit.jsonl` containing every governed action, its classification, the rule check, any operator confirmation, and the execution outcome. Entries are hash-chained (`entry_hash = sha256(prev_hash + jcs(entry))`, RFC 8785 canonical JSON), so any modification, reordering, or deletion of history is detectable:
 
 ```bash
 python3 scripts/audit_verify.py            # OK — 214 entries, chain intact
@@ -34,21 +34,19 @@ python3 scripts/phinq_assess.py <action_id> --judgment true_positive --damage-gb
 
 ## Install
 
-### For Hermes users
+Clone the repo, then run the installer for your agent:
 
 ```bash
-hermes skills install https://github.com/hythamh12/phinq-governance
+git clone https://github.com/hythamh12/phinq-governance && cd phinq-governance
+
+bash install-claude-code.sh   # Claude Code — global, works in any repo
+bash install-codex.sh         # Codex — current repo
+bash install-opencode.sh      # OpenCode — current repo
 ```
 
-Or for an individual `SKILL.md`:
+### Any agentskills.io runtime
 
-```bash
-hermes skills install https://raw.githubusercontent.com/hythamh12/phinq-governance/main/SKILL.md
-```
-
-### For other agentskills.io runtimes
-
-Clone the repo into your skills directory. Most clients auto-discover skills in their configured skill paths.
+Drop `SKILL.md` into your skills directory (or clone the repo there). Most clients auto-discover skills in their configured skill paths — e.g. `hermes skills install https://github.com/hythamh12/phinq-governance` for Hermes.
 
 ## Configuration
 
@@ -71,7 +69,7 @@ The skill cross-references your existing rules document. If you have a `SOUL.md`
 
 ## Hosted
 
-For multi-agent dashboards, cross-session audit aggregation, anomaly detection, and team-shareable governance reports across multiple Hermes instances, see [phinq.co](https://www.phinq.co).
+For multi-agent dashboards, cross-session audit aggregation, anomaly detection, and team-shareable governance reports across many agents and runtimes, see [phinq.co](https://www.phinq.co).
 
 ## License
 
